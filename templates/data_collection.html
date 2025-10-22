@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Data Collection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-btn:hover:not(.active) {
+            background: #f0f0ff;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            background: #eef1ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-area.dragover {
+            background: #e0e7ff;
+            border-color: #4c51bf;
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .record-area {
+            text-align: center;
+        }
+        
+        .record-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px auto;
+            display: block;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .record-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .record-btn.recording {
+            background: #e53e3e;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .recording-timer {
+            font-size: 2em;
+            color: #333;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .recording-status {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .note-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .note-btn {
+            padding: 12px 8px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .note-btn:hover {
+            background: #f0f0ff;
+            border-color: #667eea;
+        }
+        
+        .note-btn.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: #f0f0ff;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 5px solid #17a2b8;
+        }
+        
+        .selected-file {
+            background: #e0e7ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .selected-file.show {
+            display: block;
+        }
+        
+        .file-name {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .progress {
+            margin-top: 20px;
+        }
+        
+        .progress-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+        }
+        
+        .progress-text {
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .needed-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .needed-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .needed-item:hover {
+            background: #eef1ff;
+        }
+        
+        .needed-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .needed-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header with Stats -->
+        <div class="header">
+            <h1>🎵 Training Data Collection</h1>
+            <p>Upload or record audio samples and label them for training your AI model</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalSamples">0</div>
+                    <div class="stat-label">Total Samples</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pianoSamples">0</div>
+                    <div class="stat-label">Piano Samples</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="violinSamples">0</div>
+                    <div class="stat-label">Violin Samples</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="fluteSamples">0</div>
+                    <div class="stat-label">Shepherd's Flute</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: Audio Input -->
+            <div class="card">
+                <h2>📁 Audio Input</h2>
+                
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('upload')">
+                        📤 Upload File
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('record')">
+                        🎤 Record Live
+                    </button>
+                </div>
+                
+                <!-- Upload Tab -->
+                <div id="upload-tab" class="tab-content active">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📁</div>
+                        <div style="font-size: 1.1em; color: #333; margin-bottom: 5px;">
+                            Click to upload or drag and drop
+                        </div>
+                        <div style="color: #888; font-size: 0.9em;">
+                            WAV, MP3, OGG, FLAC (Max 10MB)
+                        </div>
+                        <input type="file" id="fileInput" accept=".wav,.mp3,.ogg,.flac">
+                    </div>
+                    
+                    <div class="selected-file" id="selectedFile">
+                        <strong>Selected:</strong> <span class="file-name" id="fileName"></span>
+                    </div>
+                </div>
+                
+                <!-- Record Tab -->
+                <div id="record-tab" class="tab-content">
+                    <div class="record-area">
+                        <button class="record-btn" id="recordBtn" title="Click to start recording">
+                            🎤
+                        </button>
+                        <div class="recording-timer" id="recordingTimer">0:00</div>
+                        <div class="recording-status" id="recordingStatus">
+                            Click the button to start recording
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info" id="infoAlert"></div>
+            </div>
+            
+            <!-- Right Panel: Labels -->
+            <div class="card">
+                <h2>🏷️ Labels</h2>
+                
+                <div class="form-group">
+                    <label for="instrument">Instrument</label>
+                    <select id="instrument">
+                        <option value="">Select instrument...</option>
+                        <option value="piano">🎹 Piano</option>
+                        <option value="violin">🎻 Violin</option>
+                        <option value="shepherds_flute">🎶 Shepherd's Flute</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Note (Click to select)</label>
+                    <input type="text" id="noteDisplay" placeholder="Select a note below" readonly>
+                    <div class="note-grid" id="noteGrid"></div>
+                </div>
+                
+                <button class="btn-primary" id="submitBtn" disabled>
+                    ✓ Submit Sample
+                </button>
+                
+                <button class="btn-secondary" id="moveToDatasetBtn">
+                    📦 Move All to Dataset
+                </button>
+                
+                <div class="alert" id="alertBox"></div>
+                
+                <div class="progress">
+                    <div class="progress-label" id="progressLabel">
+                        Progress for current selection: 0/100
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;">
+                            <span class="progress-text" id="progressText">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Panel: What's Needed -->
+        <div class="card">
+            <h2>📊 What You Need to Record</h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                Target: 100 samples per instrument-note combination (Recommended for good accuracy)
+            </p>
+            <div class="needed-list" id="neededList">
+                <div style="text-align: center; padding: 20px; color: #999;">
+                    Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentAudioFile = null;
+        let currentAudioBlob = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordingStartTime = null;
+        let recordingTimer = null;
+        let selectedNote = null;
+        
+        const notes = ['C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3', 'A3', 'A#3', 'B3',
+                       'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4',
+                       'C5', 'C#5', 'D5', 'D#5', 'E5', 'F5', 'F#5', 'G5', 'G#5', 'A5', 'A#5', 'B5'];
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createNoteGrid();
+            loadStats();
+            loadNeededSamples();
+            setupEventListeners();
+        });
+        
+        // Create note selection grid
+        function createNoteGrid() {
+            const noteGrid = document.getElementById('noteGrid');
+            notes.forEach(note => {
+                const btn = document.createElement('button');
+                btn.className = 'note-btn';
+                btn.textContent = note;
+                btn.onclick = () => selectNote(note, btn);
+                noteGrid.appendChild(btn);
+            });
+        }
+        
+        // Select note
+        function selectNote(note, btn) {
+            // Deselect all
+            document.querySelectorAll('.note-btn').forEach(b => b.classList.remove('selected'));
+            // Select this one
+            btn.classList.add('selected');
+            selectedNote = note;
+            document.getElementById('noteDisplay').value = note;
+            updateSubmitButton();
+            updateProgress();
+        }
+        
+        // Switch tab
+        function switchTab(tab) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            // Reset
+            currentAudioFile = null;
+            currentAudioBlob = null;
+            document.getElementById('selectedFile').classList.remove('show');
+            updateSubmitButton();
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const instrument = document.getElementById('instrument');
+            const recordBtn = document.getElementById('recordBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const moveBtn = document.getElementById('moveToDatasetBtn');
+            
+            // Upload area
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    handleFileSelect(e.dataTransfer.files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+            
+            // Instrument selection
+            instrument.addEventListener('change', () => {
+                updateSubmitButton();
+                updateProgress();
+            });
+            
+            // Record button
+            recordBtn.addEventListener('click', toggleRecording);
+            
+            // Submit button
+            submitBtn.addEventListener('click', submitSample);
+            
+            // Move to dataset button
+            moveBtn.addEventListener('click', moveToDataset);
+        }
+        
+        // Handle file selection
+        function handleFileSelect(file) {
+            const validTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/flac'];
+            const validExtensions = ['.wav', '.mp3', '.ogg', '.flac'];
+            const isValid = validTypes.includes(file.type) || 
+                          validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+            
+            if (!isValid) {
+                showAlert('Invalid file type. Please upload WAV, MP3, OGG, or FLAC files.', 'error');
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('File too large. Maximum size is 10MB.', 'error');
+                return;
+            }
+            
+            currentAudioFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('selectedFile').classList.add('show');
+            updateSubmitButton();
+            showInfoAlert(`File selected: ${file.name}`);
+        }
+        
+        // Toggle recording
+        async function toggleRecording() {
+            const recordBtn = document.getElementById('recordBtn');
+            const status = document.getElementById('recordingStatus');
+            
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        currentAudioBlob = audioBlob;
+                        currentAudioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+                        updateSubmitButton();
+                        showInfoAlert('Recording saved! Now select instrument and note, then submit.');
+                    };
+                    
+                    mediaRecorder.start();
+                    recordBtn.classList.add('recording');
+                    recordBtn.textContent = '⏹️';
+                    status.textContent = 'Recording... Click to stop';
+                    
+                    // Start timer
+                    recordingStartTime = Date.now();
+                    recordingTimer = setInterval(updateRecordingTimer, 100);
+                    
+                } catch (error) {
+                    showAlert('Error accessing microphone: ' + error.message, 'error');
+                }
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                recordBtn.classList.remove('recording');
+                recordBtn.textContent = '🎤';
+                status.textContent = 'Recording complete! Click to record again';
+                
+                // Stop timer
+                clearInterval(recordingTimer);
+            }
+        }
+        
+        // Update recording timer
+        function updateRecordingTimer() {
+            const elapsed = Date.now() - recordingStartTime;
+            const seconds = Math.floor(elapsed / 1000);
+            const ms = Math.floor((elapsed % 1000) / 100);
+            document.getElementById('recordingTimer').textContent = `${seconds}:${ms}`;
+        }
+        
+        // Update submit button state
+        function updateSubmitButton() {
+            const instrument = document.getElementById('instrument').value;
+            const hasAudio = currentAudioFile !== null;
+            const hasNote = selectedNote !== null;
+            
+            document.getElementById('submitBtn').disabled = !(instrument && hasAudio && hasNote);
+        }
+        
+        // Submit sample
+        async function submitSample() {
+            const instrument = document.getElementById('instrument').value;
+            const note = selectedNote;
+            
+            if (!instrument || !note || !currentAudioFile) {
+                showAlert('Please select instrument, note, and provide audio file', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', currentAudioFile);
+            formData.append('instrument', instrument);
+            formData.append('note', note);
+            formData.append('source', currentAudioBlob ? 'recording' : 'upload');
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = '⏳ Submitting...';
+            
+            try {
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✓ Success! Saved: ${data.filename}<br>` +
+                             `Total for ${instrument} ${note}: ${data.count_for_combination} samples<br>` +
+                             `Total collected: ${data.total_samples} samples`, 'success');
+                    
+                    // Reset form
+                    currentAudioFile = null;
+                    currentAudioBlob = null;
+                    document.getElementById('selectedFile').classList.remove('show');
+                    document.getElementById('fileInput').value = '';
+                    document.getElementById('recordingStatus').textContent = 'Click the button to start recording';
+                    document.getElementById('recordingTimer').textContent = '0:00';
+                    
+                    // Reload stats
+                    loadStats();
+                    loadNeededSamples();
+                    updateProgress();
+                } else {
+                    showAlert('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error submitting sample: ' + error.message, 'error');
+            } finally {
+                document.getElementById('submitBtn').textContent = '✓ Submit Sample';
+                updateSubmitButton();
+            }
+        }
+        
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalSamples').textContent = stats.total_samples;
+                document.getElementById('pianoSamples').textContent = stats.by_instrument.piano || 0;
+                document.getElementById('violinSamples').textContent = stats.by_instrument.violin || 0;
+                document.getElementById('fluteSamples').textContent = stats.by_instrument.shepherds_flute || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Load needed samples
+        async function loadNeededSamples() {
+            try {
+                const response = await fetch('/api/needed-samples');
+                const data = await response.json();
+                
+                const neededList = document.getElementById('neededList');
+                
+                if (data.needs.length === 0) {
+                    neededList.innerHTML = '<div style="text-align: center; padding: 20px; color: #28a745;">🎉 All targets reached!</div>';
+                    return;
+                }
+                
+                neededList.innerHTML = data.needs.map(item => `
+                    <div class="needed-item">
+                        <div class="needed-label">
+                            ${item.instrument === 'piano' ? '🎹' : item.instrument === 'violin' ? '🎻' : '🎶'}
+                            ${item.instrument.replace('_', ' ')} - ${item.note}
+                        </div>
+                        <div class="needed-count">${item.current}/${item.target}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading needed samples:', error);
+            }
+        }
+        
+        // Update progress for current selection
+        function updateProgress() {
+            const instrument = document.getElementById('instrument').value;
+            const note = selectedNote;
+            
+            if (!instrument || !note) {
+                document.getElementById('progressLabel').textContent = 'Progress for current selection: Select instrument and note';
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('progressText').textContent = '0%';
+                return;
+            }
+            
+            fetch('/api/stats')
+                .then(res => res.json())
+                .then(stats => {
+                    const combo = `${instrument}_${note}`;
+                    const current = stats.by_combination[combo] || 0;
+                    const target = 100;
+                    const percentage = Math.min((current / target) * 100, 100);
+                    
+                    document.getElementById('progressLabel').textContent = 
+                        `Progress for ${instrument.replace('_', ' ')} - ${note}: ${current}/${target}`;
+                    document.getElementById('progressFill').style.width = percentage + '%';
+                    document.getElementById('progressText').textContent = Math.round(percentage) + '%';
+                });
+        }
+        
+        // Move to dataset
+        async function moveToDataset() {
+            if (!confirm('This will move all collected samples to the training dataset (train/val/test splits). Continue?')) {
+                return;
+            }
+            
+            document.getElementById('moveToDatasetBtn').disabled = true;
+            document.getElementById('moveToDatasetBtn').textContent = '⏳ Moving...';
+            
+            try {
+                const response = await fetch('/api/move-to-dataset', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(`✓ ${data.message}<br>` +
+                             `Train: ${data.moved_count.train}, Val: ${data.moved_count.val}, Test: ${data.moved_count.test}`, 
+                             'success');
+                    loadStats();
+                    loadNeededSamples();
+                } else {
+                    showAlert('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Error moving files: ' + error.message, 'error');
+            } finally {
+                document.getElementById('moveToDatasetBtn').disabled = false;
+                document.getElementById('moveToDatasetBtn').textContent = '📦 Move All to Dataset';
+            }
+        }
+        
+        // Show alert
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.innerHTML = message;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Show info alert
+        function showInfoAlert(message) {
+            const infoAlert = document.getElementById('infoAlert');
+            infoAlert.textContent = message;
+            infoAlert.classList.add('show');
+            
+            setTimeout(() => {
+                infoAlert.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Auto-refresh stats every 30 seconds
+        setInterval(() => {
+            loadStats();
+            loadNeededSamples();
+        }, 30000);
+    </script>
+</body>
+</html>
+
+

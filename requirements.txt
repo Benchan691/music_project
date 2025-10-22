@@ -1,0 +1,31 @@
+# Core TensorFlow (now works natively on Apple Silicon)
+tensorflow>=2.15.0
+
+# Core dependencies with compatible versions
+numpy>=1.24.0
+
+# Audio processing
+librosa>=0.10.0
+soundfile>=0.12.0
+
+# Machine learning utilities
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Data manipulation
+pandas>=2.1.0
+
+# Visualization
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Web framework
+Flask>=3.0.0
+Flask-CORS>=4.0.0
+
+# Utilities
+pydub>=0.25.0
+jupyter>=1.0.0
+
+# Audio processing dependencies
+audioread>=3.0.0
