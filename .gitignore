@@ -27,7 +27,7 @@ wheels/
 .ipynb_checkpoints
 
 # Data
-data/
+data/*
 !data/.gitkeep
 *.wav
 *.mp3
@@ -35,7 +35,7 @@ data/
 *.flac
 
 # Models
-models/
+models/*
 !models/.gitkeep
 *.h5
 *.keras
@@ -43,16 +43,17 @@ models/
 *.ckpt
 
 # Logs
-logs/
+logs/*
+!logs/.gitkeep
 *.log
 tensorboard/
 
 # Evaluation results
-evaluation/
+evaluation/*
 !evaluation/.gitkeep
 
 # Uploads
-uploads/
+uploads/*
 !uploads/.gitkeep
 
 # IDE

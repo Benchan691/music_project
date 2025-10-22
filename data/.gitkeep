@@ -1,0 +1,3 @@
+# This file ensures the data directory is tracked by git
+# The directory itself will be empty on GitHub (data files are gitignored)
+
